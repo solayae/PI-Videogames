@@ -2,6 +2,7 @@ const { Router } = require("express");
 const { Videogame, Genre } = require("../db");
 const { API_KEY } = process.env;
 const axios = require("axios");
+
 const router = Router();
 
 // traemos la información de la api
@@ -18,10 +19,11 @@ const getApiInfo = async () => {
       name: el.name,
       released: el.released,
       rating: el.rating,
-      platforms: el.platforms.slice(0, 3),
+      image: el.background_image,
+      genres: el.genres.map((el) => el.name),
+      platforms: el.platforms.slice(0, 3).map((el) => el.platform.name),
     };
   });
-  console.table(apiInfo);
   return apiInfo;
 };
 
@@ -43,10 +45,9 @@ getAllGames = async () => {
   const apiInfo = await getApiInfo();
   const dbInfo = await getDbInfo();
   const infoTotal = await apiInfo.concat(dbInfo);
+  console.log("hola, esta es la funcion")
   return infoTotal;
 };
-
-
 
 router.get("/", async (req, res) => {
   const { name } = req.query;
@@ -57,18 +58,44 @@ router.get("/", async (req, res) => {
     );
     gameName.length
       ? res.status(200).send(gameName)
-      : res.status(404).send("sorry, no esta el personaje");
+      : res.status(404).send("sorry, no esta el juego");
   } else {
     res.status(200).send(gamesTotal);
   }
 });
 
+// const postVideogame = async (body) => {
+//   const createVideogame = await Videogame.create({ ...body });
+//   if (createVideogame) await createVideogame.addGenre(body.genre);
+//   return "Videogame created succesfully";
+// };
 
-router.get("/games", (req, res) => {
-  res.status(200).send(getApiInfo())
-})
+router.post("/", async (req, res) => {
+  const postVideogame = async (body) => {
+    if (!body.name || !body.description || !body.platforms) {
+      res
+        .status(404)
+        .send(
+          "Faltan campos obligatorios como nombre, descripción o plataformas"
+        );
+    } else {
+      const createVideogame = await Videogame.create({ ...body });
+      if (createVideogame) await createVideogame.addGenre(body.genre);
+      return "Videogame created succesfully";
+    }
+  };
+  const body = req.body;
+  try {
+    const gameCreated = await postVideogame(body);
+    res.send(gameCreated);
+  } catch (error) {
+    res.status(404).send(error.message);
+  }
+});
+
+
+
 
 module.exports = router;
 
 // config adicional para que axios funcione
- 

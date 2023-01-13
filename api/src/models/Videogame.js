@@ -27,8 +27,12 @@ module.exports = (sequelize) => {
       allowNull: true
     },
     platforms: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      allowNull: false
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     createdInDb: {
       type: DataTypes.BOOLEAN,
